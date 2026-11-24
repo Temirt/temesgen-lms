@@ -121,4 +121,48 @@ class User extends Authenticatable
     {
         return $this->hasMany(ActivityLog::class);
     }
+
+    // 3 L's Framework Relationships
+    public function learningPaths()
+    {
+        return $this->belongsToMany(LearningPath::class, 'user_learning_paths')
+                    ->withPivot('progress_percentage', 'status', 'started_at', 'completed_at')
+                    ->withTimestamps();
+    }
+
+    public function sentMessages()
+    {
+        return $this->hasMany(DirectMessage::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(DirectMessage::class, 'recipient_id');
+    }
+
+    public function studyGroups()
+    {
+        return $this->belongsToMany(StudyGroup::class, 'study_group_members')
+                    ->withPivot('role', 'joined_at')
+                    ->withTimestamps();
+    }
+
+    public function projectSubmissions()
+    {
+        return $this->hasMany(ProjectSubmission::class);
+    }
+
+    public function skills()
+    {
+        return $this->belongsToMany(Skill::class, 'user_skills')
+                    ->withPivot('proficiency_level', 'status', 'verified_projects_count')
+                    ->withTimestamps();
+    }
+
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+                    ->withPivot('awarded_at')
+                    ->withTimestamps();
+    }
 }

@@ -44,8 +44,9 @@ import InstructorStudents from './dashboards/instructor/InstructorStudents';
 import InstructorAnnouncements from './dashboards/instructor/InstructorAnnouncements';
 import InstructorAnalytics from './dashboards/instructor/InstructorAnalytics';
 import InstructorProfile from './dashboards/instructor/InstructorProfile';
+import InstructorProjects from './dashboards/instructor/InstructorProjects';
 
-// Student Views
+// Student & 3 L's Views
 import StudentDashboard from './dashboards/student/StudentDashboard';
 import StudentCourses from './dashboards/student/StudentCourses';
 import StudentProgress from './dashboards/student/StudentProgress';
@@ -54,6 +55,15 @@ import StudentQuizzes from './dashboards/student/StudentQuizzes';
 import StudentCertificates from './dashboards/student/StudentCertificates';
 import StudentNotifications from './dashboards/student/StudentNotifications';
 import StudentProfile from './dashboards/student/StudentProfile';
+
+// 3 L's Modules
+import StudentLearningPaths from './dashboards/student/StudentLearningPaths';
+import MessagingHub from './dashboards/student/MessagingHub';
+import CourseDiscussions from './dashboards/student/CourseDiscussions';
+import StudentStudyGroups from './dashboards/student/StudentStudyGroups';
+import StudentProjects from './dashboards/student/StudentProjects';
+import StudentSkills from './dashboards/student/StudentSkills';
+import StudentBadges from './dashboards/student/StudentBadges';
 
 /**
  * Route protection wrapper based on authentication & user roles.
@@ -75,7 +85,6 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect to default dashboard for the current role
     if (user.role === 'admin') return <Navigate to="/admin" replace />;
     if (user.role === 'instructor') return <Navigate to="/instructor" replace />;
     return <Navigate to="/student" replace />;
@@ -99,7 +108,7 @@ export default function App() {
         <Route path="/verify-certificate" element={<VerifyCertificatePage />} />
       </Route>
 
-      {/* Classroom Learning Player (Full Screen Experience) */}
+      {/* Classroom Learning Player */}
       <Route
         path="/learn/:courseId"
         element={
@@ -161,6 +170,11 @@ export default function App() {
         <Route path="/instructor/announcements" element={<InstructorAnnouncements />} />
         <Route path="/instructor/analytics" element={<InstructorAnalytics />} />
         <Route path="/instructor/profile" element={<InstructorProfile />} />
+        {/* 3 L's Instructor Additions */}
+        <Route path="/instructor/messages" element={<MessagingHub />} />
+        <Route path="/instructor/projects" element={<InstructorProjects />} />
+        <Route path="/instructor/discussions" element={<CourseDiscussions />} />
+        <Route path="/instructor/study-groups" element={<StudentStudyGroups />} />
       </Route>
 
       {/* Student Dashboard Routes */}
@@ -179,6 +193,20 @@ export default function App() {
         <Route path="/student/certificates" element={<StudentCertificates />} />
         <Route path="/student/notifications" element={<StudentNotifications />} />
         <Route path="/student/profile" element={<StudentProfile />} />
+
+        {/* 3 L's Framework Routes */}
+        {/* 1. LEARN */}
+        <Route path="/student/learning-paths" element={<StudentLearningPaths />} />
+
+        {/* 2. LINK */}
+        <Route path="/student/messages" element={<MessagingHub />} />
+        <Route path="/student/discussions" element={<CourseDiscussions />} />
+        <Route path="/student/study-groups" element={<StudentStudyGroups />} />
+
+        {/* 3. LEAD */}
+        <Route path="/student/projects" element={<StudentProjects />} />
+        <Route path="/student/skills" element={<StudentSkills />} />
+        <Route path="/student/badges" element={<StudentBadges />} />
       </Route>
 
       {/* Fallback wildcard */}

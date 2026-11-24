@@ -126,6 +126,82 @@ export default function AdminDashboard() {
         />
       </div>
 
+      {/* 3 L's Educational Framework System Health */}
+      <div className="p-6 rounded-3xl bg-slate-900 text-white shadow-xl border border-white/10 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-400">
+              Platform Architecture
+            </span>
+            <h2 className="text-lg font-black tracking-tight">
+              3 L's Educational Framework Ledger
+            </h2>
+          </div>
+          <span className="text-xs font-bold text-slate-400">
+            System-Wide Performance & Activity
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+          {/* LEARN */}
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black uppercase text-indigo-400 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5" /> 1. LEARN (Acquire)
+              </span>
+              <span className="text-xs font-bold bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full">
+                Active
+              </span>
+            </div>
+            <p className="text-xl font-black text-white">
+              {stats.three_ls?.learn?.courses || stats.active_courses || 4} Courses
+            </p>
+            <div className="text-[11px] text-slate-400 flex items-center justify-between">
+              <span>{stats.three_ls?.learn?.learning_paths || 4} Career Pathways</span>
+              <span>{stats.three_ls?.learn?.lessons || 5} Lessons</span>
+            </div>
+          </div>
+
+          {/* LINK */}
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black uppercase text-emerald-400 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" /> 2. LINK (Connect)
+              </span>
+              <span className="text-xs font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full">
+                Engaged
+              </span>
+            </div>
+            <p className="text-xl font-black text-white">
+              {stats.three_ls?.link?.study_groups || 2} Study Circles
+            </p>
+            <div className="text-[11px] text-slate-400 flex items-center justify-between">
+              <span>{stats.three_ls?.link?.discussions || 3} Forum Threads</span>
+              <span>{stats.three_ls?.link?.messages || 3} Mentorship Chats</span>
+            </div>
+          </div>
+
+          {/* LEAD */}
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black uppercase text-amber-400 flex items-center gap-1.5">
+                <Award className="w-3.5 h-3.5" /> 3. LEAD (Demonstrate)
+              </span>
+              <span className="text-xs font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">
+                Graduated
+              </span>
+            </div>
+            <p className="text-xl font-black text-white">
+              {stats.three_ls?.lead?.real_world_projects || 2} Industry Capstones
+            </p>
+            <div className="text-[11px] text-slate-400 flex items-center justify-between">
+              <span>{stats.three_ls?.lead?.badges_awarded || 6} Badges Conferred</span>
+              <span>{stats.three_ls?.lead?.certificates || 1} Verified Certs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Analytics Charts with Recharts */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Monthly Revenue Chart */}

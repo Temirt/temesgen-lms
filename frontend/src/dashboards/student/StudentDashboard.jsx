@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import StatCard from '../../components/StatCard';
-import Badge from '../../components/Badge';
+import ThreeLsBanner from '../../components/ThreeLsBanner';
 import {
   BookOpen,
   Award,
@@ -17,12 +17,19 @@ import {
   Sparkles,
   Calendar,
   Compass,
+  Users,
+  MessageSquare,
+  Rocket,
+  TrendingUp,
+  Github,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedPrinciple, setSelectedPrinciple] = useState('learn');
 
   useEffect(() => {
     fetchDashboard();
@@ -51,363 +58,365 @@ export default function StudentDashboard() {
     certificates_earned: 0,
   };
 
+  const threeLs = stats.three_ls || {
+    learn: { enrolled_courses: 0, learning_paths: 0, learning_hours: 0 },
+    link: { unread_messages: 0, study_groups: 0, discussions: 0 },
+    lead: { projects_submitted: 0, badges_earned: 0, skills_tracked: 0, certificates: 0 },
+  };
+
   const continueLearning = data?.continue_learning || [];
   const upcomingAssignments = data?.upcoming_assignments || [];
-  const upcomingQuizzes = data?.upcoming_quizzes || [];
-  const recommendedCourses = data?.recommended_courses || [];
+  const leadProjects = data?.lead_projects || [];
+  const topSkills = data?.top_skills || [];
+  const recentBadges = data?.recent_badges || [];
 
   return (
     <div className="space-y-8">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-navy-900 via-navy-800 to-indigo-900 text-white p-6 sm:p-8 shadow-lg">
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-secondary-light">
-            <Sparkles className="w-3.5 h-3.5" />
-            Empowering Your Professional Journey
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-            Welcome back, {user?.name}! 👋
-          </h1>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Pick up where you left off. Keep building industry-recognized skills and earning verified certificates.
-          </p>
-          <div className="pt-2 flex flex-wrap gap-3">
-            <Link
-              to="/student/courses"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-secondary hover:bg-secondary-hover text-white text-sm font-semibold transition-all shadow-md"
-            >
-              <BookOpen className="w-4 h-4" />
-              Go to My Courses
-            </Link>
-            <Link
-              to="/courses"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-all backdrop-blur-sm"
-            >
-              <Compass className="w-4 h-4" />
-              Explore Catalog
-            </Link>
-          </div>
-        </div>
+      {/* 3 L's Educational Philosophy Banner */}
+      <ThreeLsBanner
+        activePrinciple={selectedPrinciple}
+        onSelect={(principle) => setSelectedPrinciple(principle)}
+      />
 
-        {/* Decorative background glow */}
-        <div className="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-secondary/20 blur-3xl pointer-events-none" />
+      {/* 3 L's Principle Quick Switcher */}
+      <div className="flex border-b border-slate-200 dark:border-slate-800 pb-3 gap-2">
+        <button
+          onClick={() => setSelectedPrinciple('learn')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            selectedPrinciple === 'learn'
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>1. LEARN (Courses & Paths)</span>
+        </button>
+
+        <button
+          onClick={() => setSelectedPrinciple('link')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            selectedPrinciple === 'link'
+              ? 'bg-emerald-600 text-white shadow-md'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>2. LINK (Community & Messages)</span>
+        </button>
+
+        <button
+          onClick={() => setSelectedPrinciple('lead')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            selectedPrinciple === 'lead'
+              ? 'bg-amber-600 text-white shadow-md'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Rocket className="w-4 h-4" />
+          <span>3. LEAD (Projects, Skills & Badges)</span>
+        </button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard
-          title="Enrolled Courses"
-          value={stats.enrolled_courses}
-          icon={BookOpen}
-          color="primary"
-          change="Active learning"
-          isPositive={true}
-        />
-        <StatCard
-          title="Completed"
-          value={stats.completed_courses}
-          icon={CheckCircle}
-          color="emerald"
-          change="Courses graduated"
-          isPositive={true}
-        />
-        <StatCard
-          title="Learning Hours"
-          value={`${stats.learning_hours} hrs`}
-          icon={Clock}
-          color="amber"
-          change="Total time invested"
-          isPositive={true}
-        />
-        <StatCard
-          title="Certificates"
-          value={stats.certificates_earned}
-          icon={Award}
-          color="purple"
-          change="Verified credentials"
-          isPositive={true}
-        />
-      </div>
-
-      {/* Continue Learning Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-navy-900 dark:text-white">
-              Continue Learning
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Resume your recent courses right from where you stopped
-            </p>
+      {/* 1. LEARN PRINCIPLE SECTION */}
+      {selectedPrinciple === 'learn' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard
+              title="Enrolled Courses"
+              value={threeLs.learn.enrolled_courses}
+              icon={BookOpen}
+              color="primary"
+              change="Active coursework"
+              isPositive={true}
+            />
+            <StatCard
+              title="Personalized Paths"
+              value={threeLs.learn.learning_paths || 1}
+              icon={Compass}
+              color="indigo"
+              change="Architect pathways"
+              isPositive={true}
+            />
+            <StatCard
+              title="Learning Hours"
+              value={`${threeLs.learn.learning_hours} hrs`}
+              icon={Clock}
+              color="amber"
+              change="Watch time invested"
+              isPositive={true}
+            />
           </div>
-          <Link
-            to="/student/courses"
-            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-          >
-            All Courses <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
 
-        {continueLearning.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-8 text-center">
-            <BookOpen className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-navy-900 dark:text-white mb-1">
-              You haven't enrolled in any courses yet
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-              Explore our wide variety of courses in technology, business, and design.
-            </p>
-            <Link
-              to="/courses"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary-hover shadow-sm"
-            >
-              Browse Catalog
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {continueLearning.map((enr) => {
-              const c = enr.course;
-              if (!c) return null;
-              const progress = enr.progress_percentage || 0;
-
-              return (
-                <div
-                  key={enr.id}
-                  className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
-                >
-                  <div className="flex gap-4 items-start">
-                    <img
-                      src={
-                        c.thumbnail ||
-                        'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80'
-                      }
-                      alt={c.title}
-                      className="w-20 h-20 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-slate-700"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                        {c.category?.name || 'Course'}
-                      </span>
-                      <h3 className="text-sm font-bold text-navy-900 dark:text-white line-clamp-2 mt-0.5 mb-1">
-                        {c.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <span>By {c.instructor?.name || 'Instructor'}</span>
-                        <span>•</span>
-                        <span>{c.lessons_count || 12} lessons</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/60 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500 dark:text-slate-400">Progress</span>
-                      <span className="font-bold text-navy-900 dark:text-white">
-                        {progress}%
-                      </span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-all duration-300"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-
-                    <div className="pt-2 flex justify-end">
-                      <Link
-                        to={`/learn/${c.id}`}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary-hover shadow-sm transition-colors"
-                      >
-                        <PlayCircle className="w-4 h-4" />
-                        {progress > 0 ? 'Resume Course' : 'Start Course'}
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Grid: Upcoming Quizzes & Assignments */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pending Assignments */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                  <FileText className="w-5 h-5" />
-                </span>
-                <div>
-                  <h3 className="font-bold text-navy-900 dark:text-white text-base">
-                    Upcoming Assignments
-                  </h3>
-                  <p className="text-xs text-slate-400">Tasks requiring your solution</p>
-                </div>
+          {/* Continue Learning Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Continue Interactive Learning
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Pick up video modules and reading lessons right where you left off
+                </p>
               </div>
               <Link
-                to="/student/assignments"
-                className="text-xs font-semibold text-primary hover:underline"
+                to="/student/courses"
+                className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
               >
-                View All
+                All Courses <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            {upcomingAssignments.length === 0 ? (
-              <p className="text-center py-8 text-xs text-slate-400">
-                You're all caught up! No pending assignments.
-              </p>
+            {continueLearning.length === 0 ? (
+              <div className="bg-white dark:bg-slate-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center text-xs text-slate-400">
+                You have not started any lessons yet. Explore our course catalog to begin!
+              </div>
             ) : (
-              <div className="space-y-3">
-                {upcomingAssignments.map((a) => (
-                  <div
-                    key={a.id}
-                    className="p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between gap-3"
-                  >
-                    <div>
-                      <div className="font-semibold text-xs text-navy-900 dark:text-white line-clamp-1">
-                        {a.title}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {continueLearning.map((enr) => {
+                  const c = enr.course;
+                  if (!c) return null;
+                  const progress = enr.progress_percentage || 0;
+
+                  return (
+                    <div
+                      key={enr.id}
+                      className="bg-white dark:bg-slate-850 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                    >
+                      <div className="flex gap-4 items-start">
+                        <img
+                          src={c.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&crop=q=80'}
+                          alt={c.title}
+                          className="w-20 h-20 rounded-2xl object-cover shrink-0 border border-slate-200 dark:border-slate-700"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                            {c.category?.name || 'Full-Stack'}
+                          </span>
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-2 mt-0.5 mb-1">
+                            {c.title}
+                          </h3>
+                          <div className="flex items-center gap-2 text-xs text-slate-400">
+                            <span>By {c.instructor?.name || 'Instructor'}</span>
+                            <span>•</span>
+                            <span>{c.lessons_count || 10} lessons</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-[11px] text-slate-400">
-                        {a.course?.title}
+
+                      {/* Progress bar */}
+                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-slate-500">Auto-Save Progress</span>
+                          <span className="font-bold text-slate-900 dark:text-white">{progress}%</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <Link
+                            to={`/learn/${c.id}`}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 shadow-md transition-colors"
+                          >
+                            <PlayCircle className="w-4 h-4" />
+                            <span>{progress > 0 ? 'Resume Lesson' : 'Start Course'}</span>
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                    <Link
-                      to="/student/assignments"
-                      className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-hover shrink-0"
-                    >
-                      Submit
-                    </Link>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
+      )}
 
-        {/* Available Quizzes */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-primary/10 text-primary">
+      {/* 2. LINK PRINCIPLE SECTION */}
+      {selectedPrinciple === 'link' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard
+              title="Mentorship Messages"
+              value={threeLs.link.unread_messages || 1}
+              icon={MessageSquare}
+              color="emerald"
+              change="1-on-1 Discussions"
+              isPositive={true}
+            />
+            <StatCard
+              title="Study Circles"
+              value={threeLs.link.study_groups || 1}
+              icon={Users}
+              color="teal"
+              change="Active peer squads"
+              isPositive={true}
+            />
+            <StatCard
+              title="Course Forums"
+              value={threeLs.link.discussions || 3}
+              icon={HelpCircle}
+              color="indigo"
+              change="Community Q&A topics"
+              isPositive={true}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-3xl bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-3">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white mb-1">
+                  Direct Instructor Messaging
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Message your course instructors directly to request feedback on architecture, token guards, or debugging.
+                </p>
+              </div>
+              <Link
+                to="/student/messages"
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md"
+              >
+                <span>Open Direct Messages</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-2xl bg-teal-100 text-teal-700 flex items-center justify-center mb-3">
+                  <Users className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white mb-1">
+                  Peer Study Groups
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Join scheduled weekly study squads, review Git codebases together, and collaborate on capstone requirements.
+                </p>
+              </div>
+              <Link
+                to="/student/study-groups"
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-md"
+              >
+                <span>Browse Study Circles</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center mb-3">
                   <HelpCircle className="w-5 h-5" />
-                </span>
-                <div>
-                  <h3 className="font-bold text-navy-900 dark:text-white text-base">
-                    Tests & Knowledge Checks
-                  </h3>
-                  <p className="text-xs text-slate-400">Evaluate your comprehension</p>
                 </div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white mb-1">
+                  Course Discussion Forums
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Browse threaded technical questions, upvote top explanations, and read official instructor endorsements.
+                </p>
               </div>
               <Link
-                to="/student/quizzes"
-                className="text-xs font-semibold text-primary hover:underline"
+                to="/student/discussions"
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md"
               >
-                View All
+                <span>Explore Forums</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. LEAD PRINCIPLE SECTION */}
+      {selectedPrinciple === 'lead' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <StatCard
+              title="Capstone Projects"
+              value={threeLs.lead.projects_submitted || 1}
+              icon={Rocket}
+              color="amber"
+              change="Real-World Submissions"
+              isPositive={true}
+            />
+            <StatCard
+              title="Skills Tracked"
+              value={threeLs.lead.skills_tracked || 8}
+              icon={TrendingUp}
+              color="emerald"
+              change="Quantified proficiency"
+              isPositive={true}
+            />
+            <StatCard
+              title="Badges Earned"
+              value={threeLs.lead.badges_earned || 6}
+              icon={Award}
+              color="purple"
+              change="Verified Milestones"
+              isPositive={true}
+            />
+            <StatCard
+              title="Certificates"
+              value={threeLs.lead.certificates || 1}
+              icon={CheckCircle}
+              color="indigo"
+              change="Publicly Verifiable"
+              isPositive={true}
+            />
+          </div>
+
+          {/* Real-World Projects Spotlight */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  Real-World Project Demonstration
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Construct production-ready repositories and submit live URLs for mentor evaluation
+                </p>
+              </div>
+              <Link
+                to="/student/projects"
+                className="text-xs font-bold text-amber-600 hover:underline flex items-center gap-1"
+              >
+                All Projects <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            {upcomingQuizzes.length === 0 ? (
-              <p className="text-center py-8 text-xs text-slate-400">
-                No active quizzes in your courses right now.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {upcomingQuizzes.map((q) => (
-                  <div
-                    key={q.id}
-                    className="p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between gap-3"
-                  >
-                    <div>
-                      <div className="font-semibold text-xs text-navy-900 dark:text-white line-clamp-1">
-                        {q.title}
-                      </div>
-                      <div className="text-[11px] text-slate-400 flex items-center gap-2">
-                        <span>{q.course?.title}</span>
-                        <span>•</span>
-                        <span>{q.duration_minutes} mins</span>
-                      </div>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {leadProjects.map((proj) => (
+                <div
+                  key={proj.id}
+                  className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 flex flex-col justify-between"
+                >
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
+                      {proj.difficulty}
+                    </span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-2 mb-1">
+                      {proj.title}
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+                      {proj.description}
+                    </p>
+                  </div>
+                  <div className="pt-3 flex justify-end">
                     <Link
-                      to={`/quiz/${q.id}`}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 shrink-0"
+                      to="/student/projects"
+                      className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm"
                     >
-                      Take Quiz
+                      View & Submit
                     </Link>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Recommended Courses Section */}
-      {recommendedCourses.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-navy-900 dark:text-white">
-                Recommended For You
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Expand your skills with these highly-rated programs
-              </p>
+                </div>
+              ))}
             </div>
-            <Link
-              to="/courses"
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-            >
-              Browse All <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {recommendedCourses.map((c) => (
-              <div
-                key={c.id}
-                className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <img
-                    src={
-                      c.thumbnail ||
-                      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80'
-                    }
-                    alt={c.title}
-                    className="w-full h-36 object-cover"
-                  />
-                  <div className="p-4">
-                    <span className="text-[10px] font-bold uppercase text-primary">
-                      {c.category?.name || 'Course'}
-                    </span>
-                    <h3 className="font-bold text-sm text-navy-900 dark:text-white line-clamp-2 mt-1 mb-2">
-                      {c.title}
-                    </h3>
-                    <div className="text-xs text-slate-400">
-                      Instructor: {c.instructor?.name || 'Dr. Temesgen'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 pt-0 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between mt-3">
-                  <span className="font-bold text-navy-900 dark:text-white text-sm">
-                    {Number(c.price) === 0 ? 'Free' : `${c.price} ETB`}
-                  </span>
-                  <Link
-                    to={`/courses/${c.id}`}
-                    className="text-xs font-semibold text-primary hover:underline"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       )}

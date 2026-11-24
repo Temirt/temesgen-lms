@@ -79,6 +79,27 @@ class AdminController extends Controller
             ];
         }
 
+        // 3 L's Framework System Overview
+        $threeLsPlatform = [
+            'learn' => [
+                'courses' => $activeCourses,
+                'learning_paths' => \App\Models\LearningPath::count(),
+                'lessons' => \App\Models\Lesson::count(),
+                'quizzes' => \App\Models\Quiz::count(),
+            ],
+            'link' => [
+                'study_groups' => \App\Models\StudyGroup::count(),
+                'discussions' => \App\Models\CourseDiscussion::count(),
+                'messages' => \App\Models\DirectMessage::count(),
+            ],
+            'lead' => [
+                'real_world_projects' => \App\Models\RealWorldProject::count(),
+                'project_submissions' => \App\Models\ProjectSubmission::count(),
+                'badges_awarded' => \App\Models\UserBadge::count(),
+                'certificates' => \App\Models\Certificate::count(),
+            ],
+        ];
+
         return response()->json([
             'stats' => [
                 'total_students' => $totalStudents,
@@ -87,6 +108,7 @@ class AdminController extends Controller
                 'active_courses' => $activeCourses,
                 'total_enrollments' => $totalEnrollments,
                 'total_revenue' => (float) $totalRevenue,
+                'three_ls' => $threeLsPlatform,
             ],
             'chart_data' => $months,
             'recent_users' => $recentUsers,

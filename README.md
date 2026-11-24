@@ -11,6 +11,49 @@
 
 ---
 
+## 🧭 The 3 L's Learning Framework
+
+Temesgen LMS is built ground-up around three foundational educational principles that take learners from knowledge acquisition to community collaboration and real-world leadership:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                      THE 3 L's LEARNING FRAMEWORK                      │
+├─────────────────────┬──────────────────────────┬───────────────────────┤
+│      1. LEARN       │         2. LINK          │        3. LEAD        │
+│ Knowledge Acquisition│   Social Collaboration   │  Skill Demonstration  │
+├─────────────────────┼──────────────────────────┼───────────────────────┤
+│ • Interactive Courses│ • Direct 1-on-1 Messages │ • Real-World Capstones│
+│ • Video & Reading   │ • Course Discussion Q&A  │ • Project Submissions │
+│ • Downloadable PDFs │ • Peer Study Circles     │ • Mentor Evaluations  │
+│ • Timed Examinations│ • Instructor Endorsements│ • Skill Competency Map│
+│ • Career Paths      │ • Collaborative Notes    │ • Gamified Badges     │
+│ • Auto-Save Progress│ • Course Announcements   │ • Verifiable Certs    │
+└─────────────────────┴──────────────────────────┴───────────────────────┘
+```
+
+### 1. 📘 LEARN — Knowledge Acquisition
+- **Interactive Courses & Curriculum**: Multi-module courses with video streaming and rich markdown reading articles.
+- **Downloadable Learning Materials**: Attached PDFs, SQL cheatsheets, and architecture diagrams per lesson (`/learning/:id`).
+- **Timed Quizzes & Examinations**: Timed auto-graded assessments with question navigation and instant feedback breakdowns (`/quiz/:id`).
+- **Personalized Learning Paths**: Career-focused pathways (Full-Stack Enterprise Cloud Architect, Cloud Native DevOps Specialist, Applied AI & Data Science, Modern UI/UX Systems) with milestone tracking (`/student/learning-paths`).
+- **Auto-Save Progress Tracking**: Real-time completion checkboxes updating MySQL state and progress percentages automatically.
+
+### 2. 💬 LINK — Social Collaboration
+- **Student & Instructor Direct Messaging**: Dedicated 1-on-1 messaging hub for mentorship, code inquiries, and guidance (`/student/messages`, `/instructor/messages`).
+- **Course Discussion Forums & Threads**: Threaded Q&A per course and lesson with upvoting and official instructor endorsements (`/student/discussions`).
+- **Student Study Groups & Circles**: Peer study circles with scheduled weekly meetups, rosters, and collaborative group chat (`/student/study-groups`).
+- **Course Announcements**: Broadcast updates from instructors and administrators with priority pinning.
+
+### 3. 🏆 LEAD — Skill Demonstration & Leadership
+- **Real-World Capstone Projects**: Industry-grade scenarios with specifications, requirements, and deliverables (`/student/projects`).
+- **Project Submissions**: Submission of live deployed URLs, GitHub repository links, and architecture notes.
+- **Instructor Evaluations & Grading Studio**: Qualitative mentor feedback, score grading (0-100), and skill point awards (`/instructor/projects`).
+- **Skill Development Tracking**: Quantified competency index tracking across 8 core disciplines (Backend Architecture, Database Modeling, Reactive Frontend UI, DevOps, Security) with mastery levels (`/student/skills`).
+- **Achievement Badges**: Gamified badge awards across Learn, Link, and Lead principles with unlock criteria (`/student/badges`).
+- **Professional Certificates**: Cryptographically verifiable credentials with public verification engine (`/verify-certificate?id=TLMS-2026-A89F31`).
+
+---
+
 ## 🚀 Key Highlights & Architecture
 
 - **Backend Framework**: [Laravel 12](https://laravel.com/) with PHP 8.2+

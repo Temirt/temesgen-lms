@@ -187,6 +187,119 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 2.5 THE 3 L's LEARNING FRAMEWORK SPOTLIGHT */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-10">
+          <span className="text-xs font-bold text-[#6C63FF] uppercase tracking-widest bg-[#6C63FF]/10 px-3 py-1 rounded-full border border-[#6C63FF]/20">
+            Educational Philosophy
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-black text-[#14213D] mt-3 tracking-tight">
+            The 3 L's Learning Framework
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+            Temesgen LMS is engineered around three foundational pedagogical principles designed to guide you from curious learner to industry-tested engineering leader.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* 1. LEARN */}
+          <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white shadow-md mb-6">
+                <BookOpen className="w-7 h-7" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                Step 1: Acquire Knowledge
+              </span>
+              <h3 className="text-xl font-extrabold text-[#14213D] mt-3 mb-2">
+                1. LEARN
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Absorb essential foundational and advanced concepts through high-definition video lectures, downloadable guides, auto-saving progress, and personalized career pathways.
+              </p>
+              <ul className="space-y-2 text-xs text-slate-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />
+                  <span>Interactive full-stack curriculum</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />
+                  <span>Downloadable PDFs and cheat sheets</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />
+                  <span>Personalized milestone learning paths</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* 2. LINK */}
+          <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md mb-6">
+                <Users className="w-7 h-7" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                Step 2: Connect with Others
+              </span>
+              <h3 className="text-xl font-extrabold text-[#14213D] mt-3 mb-2">
+                2. LINK
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Learning is a social catalyst. Engage with instructors through direct messaging, resolve questions on forum threads, and join weekly collaborative peer study squads.
+              </p>
+              <ul className="space-y-2 text-xs text-slate-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>1-on-1 instructor mentorship chats</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Threaded Q&A with endorsed answers</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Peer study circles & weekly code review</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* 3. LEAD */}
+          <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-600 flex items-center justify-center text-white shadow-md mb-6">
+                <Rocket className="w-7 h-7" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">
+                Step 3: Demonstrate Practical Skills
+              </span>
+              <h3 className="text-xl font-extrabold text-[#14213D] mt-3 mb-2">
+                3. LEAD
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Prove your capability by engineering real-world capstone projects, submitting GitHub repositories and live URLs, and unlocking verifiable credentials and badges.
+              </p>
+              <ul className="space-y-2 text-xs text-slate-600">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>Audited industry-grade capstones</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>Competency radar & skill tracking</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>Gamified badges & cryptographic certs</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 3. POPULAR CATEGORIES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">

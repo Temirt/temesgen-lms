@@ -11,7 +11,10 @@ import {
   CheckSquare,
   PlusCircle,
   Clock,
-  ArrowRight
+  ArrowRight,
+  MessageSquare,
+  Rocket,
+  Sparkles,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -45,9 +48,15 @@ export default function InstructorDashboard() {
       {/* Title & Quick Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-[#14213D]">Instructor Studio</h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Monitor student engagement, review assignment submissions, and publish new lectures.
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-xs font-bold border border-indigo-200/60 dark:border-indigo-800/50 mb-2">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+            <span>3 L's Pedagogical Studio</span>
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Instructor Command Studio
+          </h1>
+          <p className="text-xs md:text-sm text-slate-500 mt-0.5">
+            Manage curriculum (Learn), foster mentorship & discussion (Link), and evaluate capstones (Lead).
           </p>
         </div>
         <Link
@@ -56,6 +65,75 @@ export default function InstructorDashboard() {
         >
           <PlusCircle className="w-4 h-4" /> Create New Course
         </Link>
+      </div>
+
+      {/* 3 L's Quick Overview Bar */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+                1. LEARN Studio
+              </span>
+              <p className="text-sm font-black text-slate-900 dark:text-white">
+                {stats.published_courses || 2} Published Courses
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/instructor/courses"
+            className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
+          >
+            Curriculum <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                2. LINK Hub
+              </span>
+              <p className="text-sm font-black text-slate-900 dark:text-white">
+                {stats.unread_messages || 0} Messages • {stats.active_study_groups || 2} Circles
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/instructor/messages"
+            className="text-xs font-bold text-emerald-600 hover:underline flex items-center gap-1"
+          >
+            Mentorship <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-sm">
+              <Rocket className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                3. LEAD Center
+              </span>
+              <p className="text-sm font-black text-slate-900 dark:text-white">
+                {stats.pending_project_evaluations || 0} Capstones to Grade
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/instructor/projects"
+            className="text-xs font-bold text-amber-600 hover:underline flex items-center gap-1"
+          >
+            Grade Studio <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -89,9 +167,9 @@ export default function InstructorDashboard() {
       {/* Charts & Tasks Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Student Enrollment Activity Chart */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm space-y-4">
+        <div className="lg:col-span-7 bg-white dark:bg-slate-850 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-[#14213D]">Student Enrollment Trend</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Student Enrollment Trend</h3>
             <span className="text-xs font-semibold text-slate-400">Past 6 Months</span>
           </div>
 
@@ -112,83 +190,58 @@ export default function InstructorDashboard() {
         </div>
 
         {/* Quick Instructor Actions & Pending Work */}
-        <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm space-y-4">
-          <h3 className="text-base font-bold text-[#14213D]">Instructor Tasks</h3>
+        <div className="lg:col-span-5 bg-white dark:bg-slate-850 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm space-y-4">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">Instructor Studio Tasks</h3>
 
           <div className="space-y-3">
             <Link
+              to="/instructor/projects"
+              className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 hover:border-amber-300 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Rocket className="w-5 h-5 text-amber-600" />
+                <div>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                    Real-World Capstone Evaluations
+                  </span>
+                  <span className="text-[10px] text-slate-400">Audit student code and award skill points</span>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-amber-600" />
+            </Link>
+
+            <Link
               to="/instructor/submissions"
-              className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 flex items-center justify-between hover:bg-amber-100/60 transition-colors"
+              className="flex items-center justify-between p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 hover:border-indigo-300 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <CheckSquare className="w-5 h-5 text-amber-600" />
+                <CheckSquare className="w-5 h-5 text-indigo-600" />
                 <div>
-                  <h4 className="text-xs font-bold text-amber-900">Grade Student Submissions</h4>
-                  <p className="text-[11px] text-amber-700">{stats.pending_submissions || 0} submissions awaiting your feedback</p>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                    Review Course Assignments
+                  </span>
+                  <span className="text-[10px] text-slate-400">Regular unit homework submissions</span>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-amber-700" />
+              <ArrowRight className="w-4 h-4 text-indigo-600" />
             </Link>
 
             <Link
-              to="/instructor/modules"
-              className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-200 flex items-center justify-between hover:bg-indigo-100/60 transition-colors"
+              to="/instructor/messages"
+              className="flex items-center justify-between p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 hover:border-emerald-300 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <BookOpen className="w-5 h-5 text-[#6C63FF]" />
+                <MessageSquare className="w-5 h-5 text-emerald-600" />
                 <div>
-                  <h4 className="text-xs font-bold text-indigo-900">Curriculum & Video Lessons</h4>
-                  <p className="text-[11px] text-indigo-700">Add lessons, video streams, or PDF attachments</p>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                    Student Mentorship Messages
+                  </span>
+                  <span className="text-[10px] text-slate-400">Answer 1-on-1 student inquiries</span>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-indigo-700" />
-            </Link>
-
-            <Link
-              to="/instructor/announcements"
-              className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between hover:bg-slate-100 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Award className="w-5 h-5 text-slate-700" />
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">Post Course Announcement</h4>
-                  <p className="text-[11px] text-slate-500">Broadcast updates to your students</p>
-                </div>
-              </div>
-              <ArrowRight className="w-4 h-4 text-slate-500" />
+              <ArrowRight className="w-4 h-4 text-emerald-600" />
             </Link>
           </div>
-        </div>
-      </div>
-
-      {/* Recent Enrolled Students */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-[#14213D]">Recent Course Enrollments</h3>
-          <Link to="/instructor/students" className="text-xs font-bold text-[#6C63FF] hover:underline">
-            View All Students →
-          </Link>
-        </div>
-
-        <div className="divide-y divide-slate-100">
-          {recentEnrollments.map((enr) => (
-            <div key={enr.id} className="py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img
-                  src={enr.user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80'}
-                  alt={enr.user?.name}
-                  className="w-9 h-9 rounded-xl object-cover"
-                />
-                <div>
-                  <p className="text-xs font-bold text-[#14213D]">{enr.user?.name}</p>
-                  <span className="text-[11px] text-slate-400">Enrolled in {enr.course?.title}</span>
-                </div>
-              </div>
-              <span className="text-xs text-slate-400">
-                {new Date(enr.created_at).toLocaleDateString()}
-              </span>
-            </div>
-          ))}
         </div>
       </div>
     </div>

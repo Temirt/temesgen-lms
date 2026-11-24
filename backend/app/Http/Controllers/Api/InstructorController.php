@@ -37,6 +37,15 @@ class InstructorController extends Controller
             $q->whereIn('course_id', $courseIds);
         })->where('status', 'submitted')->count();
 
+        // 3 L's Instructor Metrics
+        $pendingProjectEvaluations = \App\Models\ProjectSubmission::whereHas('project', function ($q) use ($courseIds) {
+            $q->whereIn('course_id', $courseIds);
+        })->where('status', 'submitted')->count();
+
+        $activeStudyGroups = \App\Models\StudyGroup::whereIn('course_id', $courseIds)->count();
+        $unresolvedDiscussions = \App\Models\CourseDiscussion::whereIn('course_id', $courseIds)->where('is_resolved', false)->count();
+        $unreadMessages = \App\Models\DirectMessage::where('recipient_id', $user->id)->where('is_read', false)->count();
+
         // Recent enrollments
         $recentEnrollments = Enrollment::with(['user:id,name,email,avatar', 'course:id,title'])
             ->whereIn('course_id', $courseIds)
@@ -66,6 +75,10 @@ class InstructorController extends Controller
                 'total_enrollments' => $totalEnrollments,
                 'completion_rate' => $completionRate,
                 'pending_submissions' => $pendingSubmissions,
+                'pending_project_evaluations' => $pendingProjectEvaluations,
+                'active_study_groups' => $activeStudyGroups,
+                'unresolved_discussions' => $unresolvedDiscussions,
+                'unread_messages' => $unreadMessages,
                 'average_rating' => 4.9,
             ],
             'recent_enrollments' => $recentEnrollments,

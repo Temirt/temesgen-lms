@@ -4,6 +4,7 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Badge from '../components/Badge';
+import CourseDiscussions from '../dashboards/student/CourseDiscussions';
 import {
   PlayCircle,
   CheckCircle2,
@@ -20,6 +21,8 @@ import {
   ArrowLeft,
   Sparkles,
   BookOpen,
+  Users,
+  Rocket,
 } from 'lucide-react';
 
 export default function LearnCoursePage() {
@@ -35,7 +38,7 @@ export default function LearnCoursePage() {
   const [expandedModules, setExpandedModules] = useState({});
   const [completing, setCompleting] = useState(false);
   const [newCertificate, setNewCertificate] = useState(null);
-  const [activeTab, setActiveTab] = useState('lesson'); // 'lesson', 'announcements', 'resources'
+  const [activeTab, setActiveTab] = useState('learn'); // 'learn', 'link', 'lead', 'announcements'
 
   const videoRef = useRef(null);
 
@@ -47,193 +50,166 @@ export default function LearnCoursePage() {
         setEnrollment(res.data.enrollment);
         setCompletedLessonIds(res.data.completed_lesson_ids || []);
 
-        // Pick initial active lesson
         const allLessons = [];
         res.data.course?.modules?.forEach((m) => {
           m.lessons?.forEach((l) => allLessons.push(l));
         });
 
         if (allLessons.length > 0) {
-          // If there's a last accessed or uncompleted lesson, pick it, else pick first
           const firstUncompleted = allLessons.find(
             (l) => !res.data.completed_lesson_ids?.includes(l.id)
           );
-          const initial = firstUncompleted || allLessons[0];
-          setCurrentLesson(initial);
-
-          // Expand initial module
-          if (initial.module_id) {
-            setExpandedModules({ [initial.module_id]: true });
-          }
+          setCurrentLesson(firstUncompleted || allLessons[0]);
         }
+
+        const initialExpanded = {};
+        res.data.course?.modules?.forEach((m, idx) => {
+          initialExpanded[m.id] = idx === 0;
+        });
+        setExpandedModules(initialExpanded);
       } catch (err) {
         console.error('Error loading classroom:', err);
-        alert(err.response?.data?.message || 'Access restricted to enrolled students');
-        navigate(`/courses/${courseId}`);
       } finally {
         setLoading(false);
       }
     };
 
     fetchClassroom();
-  }, [courseId, navigate]);
+  }, [courseId]);
 
-  // Handle Mark Completed
-  const handleMarkCompleted = async () => {
+  const toggleModule = (modId) => {
+    setExpandedModules((prev) => ({
+      ...prev,
+      [modId]: !prev[modId],
+    }));
+  };
+
+  const handleCompleteLesson = async () => {
     if (!currentLesson || completing) return;
-    setCompleting(true);
 
     try {
+      setCompleting(true);
       const res = await api.post(`/learning/lessons/${currentLesson.id}/complete`);
+
       if (!completedLessonIds.includes(currentLesson.id)) {
         setCompletedLessonIds((prev) => [...prev, currentLesson.id]);
       }
 
-      if (enrollment) {
-        setEnrollment((prev) => ({
-          ...prev,
-          progress_percentage: res.data.progress_percentage,
-          status: res.data.progress_percentage >= 100 ? 'completed' : prev.status,
-        }));
+      if (res.data.enrollment) {
+        setEnrollment(res.data.enrollment);
       }
 
-      if (res.data.certificate_issued && res.data.certificate) {
+      if (res.data.certificate) {
         setNewCertificate(res.data.certificate);
       }
-
-      // Automatically advance to next lesson if available
-      goToNextLesson();
     } catch (err) {
-      console.error(err);
+      console.error('Error completing lesson:', err);
     } finally {
       setCompleting(false);
     }
-  };
-
-  // Flattened list of all lessons in course for Prev/Next navigation
-  const allLessons = course?.modules?.flatMap((m) => m.lessons || []) || [];
-  const currentIndex = allLessons.findIndex((l) => l.id === currentLesson?.id);
-  const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
-  const nextLesson = currentIndex >= 0 && currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
-
-  const goToNextLesson = () => {
-    if (nextLesson) {
-      setCurrentLesson(nextLesson);
-      if (nextLesson.module_id) {
-        setExpandedModules((prev) => ({ ...prev, [nextLesson.module_id]: true }));
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const goToPrevLesson = () => {
-    if (prevLesson) {
-      setCurrentLesson(prevLesson);
-      if (prevLesson.module_id) {
-        setExpandedModules((prev) => ({ ...prev, [prevLesson.module_id]: true }));
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const toggleModule = (modId) => {
-    setExpandedModules((prev) => ({ ...prev, [modId]: !prev[modId] }));
   };
 
   if (loading) {
     return <LoadingSpinner text="Launching interactive classroom..." />;
   }
 
-  if (!course) return null;
+  if (!course) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Course Not Found</h2>
+        <Link to="/courses" className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">
+          Browse Courses
+        </Link>
+      </div>
+    );
+  }
 
-  const totalLessons = allLessons.length;
-  const completedCount = completedLessonIds.length;
-  const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+  const progressPercentage = enrollment?.progress_percentage || 0;
   const isLessonCompleted = currentLesson && completedLessonIds.includes(currentLesson.id);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
       {/* Top Classroom Bar */}
-      <header className="h-16 bg-[#14213D] text-white px-4 sm:px-6 flex items-center justify-between z-20 shrink-0">
-        <div className="flex items-center gap-4">
+      <header className="h-16 bg-[#14213D] text-white px-4 sm:px-6 flex items-center justify-between border-b border-white/10 shrink-0 sticky top-0 z-40">
+        <div className="flex items-center gap-3">
           <Link
-            to={`/courses/${course.id}`}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors"
-            title="Back to Course Details"
+            to="/student/courses"
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-slate-300 hover:text-white"
+            title="Back to My Courses"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
           </Link>
-          <div className="max-w-md truncate">
-            <span className="text-[10px] text-[#6C63FF] font-bold uppercase tracking-wider block">
-              Classroom
+          <div className="overflow-hidden">
+            <h1 className="text-xs sm:text-sm font-extrabold truncate max-w-xs sm:max-w-md lg:max-w-xl text-white">
+              {course.title}
+            </h1>
+            <span className="text-[10px] text-slate-400 block truncate">
+              Taught by {course.instructor?.name || 'Instructor'}
             </span>
-            <h1 className="text-sm font-bold text-white truncate">{course.title}</h1>
           </div>
         </div>
 
-        {/* Course Progress Indicator */}
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-3">
-            <div className="w-32 bg-white/10 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-[#6C63FF] to-emerald-400 h-full rounded-full transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <span className="text-xs font-bold text-slate-300">{progressPercent}% Completed</span>
+        {/* Progress Pill */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex flex-col items-end">
+            <span className="text-[10px] text-slate-300 font-bold">Course Mastery</span>
+            <span className="text-xs font-black text-indigo-400">{progressPercentage}% Complete</span>
           </div>
-
-          {progressPercent >= 100 && (
-            <Link
-              to="/student/certificates"
-              className="px-3 py-1.5 rounded-xl bg-amber-400 text-slate-900 text-xs font-bold flex items-center gap-1 shadow-md hover:brightness-105"
-            >
-              <Award className="w-3.5 h-3.5" /> View Certificate
-            </Link>
-          )}
+          <div className="w-24 sm:w-32 bg-white/10 h-2.5 rounded-full overflow-hidden border border-white/10">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#6C63FF] to-[#3B82F6] transition-all duration-500"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
         </div>
       </header>
 
-      {/* Main Learning Classroom Layout */}
+      {/* Classroom Workspace Split */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Left Sidebar: Curriculum & Lessons */}
-        <aside className="w-full lg:w-80 bg-white border-r border-slate-200/80 flex flex-col shrink-0 overflow-y-auto max-h-[50vh] lg:max-h-[calc(100vh-64px)]">
-          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-            <h3 className="text-xs font-extrabold text-[#14213D] uppercase tracking-wider">
-              Course Content
-            </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              {completedCount} of {totalLessons} lessons finished
+        {/* Left Sidebar: Curriculum Accordion */}
+        <aside className="w-full lg:w-80 bg-white dark:bg-slate-850 border-r border-slate-200/80 dark:border-slate-800 flex flex-col shrink-0 max-h-[calc(100vh-64px)] overflow-y-auto">
+          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Curriculum Roadmap
+            </h2>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              {completedLessonIds.length} of {course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0} lessons completed
             </p>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {course.modules?.map((mod, modIdx) => {
-              const isExpanded = !!expandedModules[mod.id];
+              const isExpanded = expandedModules[mod.id];
+              const modLessons = mod.lessons || [];
+              const modCompletedCount = modLessons.filter((l) => completedLessonIds.includes(l.id)).length;
+
               return (
-                <div key={mod.id}>
-                  {/* Module header toggle */}
+                <div key={mod.id} className="border-b border-slate-100 dark:border-slate-800">
                   <button
                     onClick={() => toggleModule(mod.id)}
-                    className="w-full flex items-center justify-between p-3.5 text-left bg-slate-50/80 hover:bg-slate-100 transition-colors"
+                    className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                   >
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      <span className="text-[10px] font-extrabold uppercase text-indigo-600 dark:text-indigo-400 block mb-0.5">
                         Module {modIdx + 1}
                       </span>
-                      <h4 className="text-xs font-bold text-[#14213D] line-clamp-1">{mod.title}</h4>
+                      <h3 className="text-xs font-bold text-slate-900 dark:text-white leading-snug">
+                        {mod.title}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 block mt-1">
+                        {modCompletedCount}/{modLessons.length} Completed
+                      </span>
                     </div>
                     {isExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                      <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                      <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
                     )}
                   </button>
 
-                  {/* Lessons list */}
                   {isExpanded && (
-                    <div className="divide-y divide-slate-50">
-                      {mod.lessons?.map((lesson) => {
+                    <div className="bg-slate-50/60 dark:bg-slate-900/30 divide-y divide-slate-100 dark:divide-slate-800/60">
+                      {modLessons.map((lesson) => {
                         const isCurrent = currentLesson?.id === lesson.id;
                         const isDone = completedLessonIds.includes(lesson.id);
 
@@ -246,19 +222,21 @@ export default function LearnCoursePage() {
                             }}
                             className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
                               isCurrent
-                                ? 'bg-indigo-50/80 border-l-4 border-[#6C63FF]'
-                                : 'hover:bg-slate-50'
+                                ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-l-4 border-indigo-600'
+                                : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
                             }`}
                           >
                             {isDone ? (
                               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                             ) : (
-                              <Circle className="w-4 h-4 text-slate-300 shrink-0" />
+                              <Circle className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0" />
                             )}
                             <div className="flex-1 overflow-hidden">
                               <p
                                 className={`text-xs truncate ${
-                                  isCurrent ? 'font-bold text-[#14213D]' : 'font-medium text-slate-700'
+                                  isCurrent
+                                    ? 'font-bold text-indigo-900 dark:text-indigo-200'
+                                    : 'font-medium text-slate-700 dark:text-slate-300'
                                 }`}
                               >
                                 {lesson.title}
@@ -277,12 +255,12 @@ export default function LearnCoursePage() {
                         <Link
                           key={quiz.id}
                           to={`/quiz/${quiz.id}`}
-                          className="w-full flex items-center gap-3 p-3 text-left hover:bg-amber-50/60 transition-colors text-amber-900 border-l-2 border-amber-400"
+                          className="w-full flex items-center gap-3 p-3 text-left hover:bg-amber-50/60 transition-colors text-amber-900 dark:text-amber-300 border-l-2 border-amber-400"
                         >
                           <HelpCircle className="w-4 h-4 text-amber-600 shrink-0" />
                           <div className="flex-1 overflow-hidden">
                             <p className="text-xs font-bold truncate">Quiz: {quiz.title}</p>
-                            <span className="text-[10px] text-amber-700">
+                            <span className="text-[10px] text-amber-700 dark:text-amber-400">
                               {quiz.duration_minutes} mins • Passing: {quiz.passing_score}%
                             </span>
                           </div>
@@ -300,7 +278,7 @@ export default function LearnCoursePage() {
         <main className="flex-1 flex flex-col overflow-y-auto max-h-[calc(100vh-64px)]">
           {/* Certificate Celebration Banner if completed */}
           {newCertificate && (
-            <div className="m-6 p-6 rounded-3xl bg-gradient-to-r from-amber-500 via-[#6C63FF] to-[#3B82F6] text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+            <div className="m-6 p-6 rounded-3xl bg-gradient-to-r from-amber-500 via-[#6C63FF] to-[#3B82F6] text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
                   <Award className="w-7 h-7" />
@@ -329,160 +307,230 @@ export default function LearnCoursePage() {
                 {currentLesson.content_type === 'video' && currentLesson.video_url ? (
                   <video
                     ref={videoRef}
-                    key={currentLesson.id}
                     src={currentLesson.video_url}
                     controls
                     className="w-full h-full object-contain"
-                    poster={course.thumbnail}
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-slate-900">
-                    <BookOpen className="w-12 h-12 text-[#6C63FF] mb-3" />
-                    <h3 className="text-base font-bold text-white">{currentLesson.title}</h3>
-                    <p className="text-xs text-slate-400 mt-1 max-w-md">
-                      This lesson is an interactive reading and practice guide. Review the materials below.
+                  <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center text-white space-y-3">
+                    <FileText className="w-16 h-16 text-indigo-400" />
+                    <h3 className="text-xl font-bold">{currentLesson.title}</h3>
+                    <p className="text-xs text-slate-300 max-w-md">
+                      This is a reading module. Please review the comprehensive guide and code examples below.
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Lesson Controls: Prev, Next, Mark Complete */}
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <button
-                    onClick={goToPrevLesson}
-                    disabled={!prevLesson}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Previous
-                  </button>
-
-                  <button
-                    onClick={goToNextLesson}
-                    disabled={!nextLesson}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+              {/* Action Bar: Mark Complete */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-850 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <div>
+                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    {currentLesson.title}
+                  </h2>
+                  <span className="text-xs text-slate-400">
+                    {currentLesson.duration_minutes} minutes • Module {currentLesson.module_id}
+                  </span>
                 </div>
 
-                {/* Mark as Completed Button */}
                 <button
-                  onClick={handleMarkCompleted}
+                  onClick={handleCompleteLesson}
                   disabled={completing}
-                  className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all shadow-md ${
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 ${
                     isLessonCompleted
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
-                      : 'bg-[#14213D] text-white hover:bg-[#6C63FF]'
+                      ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                   }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  {isLessonCompleted ? 'Completed (Click to Re-complete)' : 'Mark as Completed'}
+                  <span>
+                    {isLessonCompleted ? 'Completed (Click to Re-save)' : 'Mark as Completed'}
+                  </span>
                 </button>
               </div>
 
-              {/* Lesson Tabs: Notes, Downloadable Resources, Announcements */}
-              <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm space-y-6">
-                <div className="flex items-center gap-4 border-b border-slate-100 pb-3 text-xs font-bold">
+              {/* 3 L's Classroom Hub Tabs */}
+              <div className="bg-white dark:bg-slate-850 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm space-y-6">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3 text-xs font-bold overflow-x-auto">
                   <button
-                    onClick={() => setActiveTab('lesson')}
-                    className={`pb-3 -mb-3 transition-colors ${
-                      activeTab === 'lesson'
-                        ? 'border-b-2 border-[#6C63FF] text-[#6C63FF]'
-                        : 'text-slate-500 hover:text-slate-800'
+                    onClick={() => setActiveTab('learn')}
+                    className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+                      activeTab === 'learn'
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
-                    Lesson Overview
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>1. LEARN (Lesson & Resources)</span>
                   </button>
+
                   <button
-                    onClick={() => setActiveTab('resources')}
-                    className={`pb-3 -mb-3 transition-colors flex items-center gap-1 ${
-                      activeTab === 'resources'
-                        ? 'border-b-2 border-[#6C63FF] text-[#6C63FF]'
-                        : 'text-slate-500 hover:text-slate-800'
+                    onClick={() => setActiveTab('link')}
+                    className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+                      activeTab === 'link'
+                        ? 'bg-emerald-600 text-white shadow-md'
+                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
-                    Resources ({currentLesson.resources?.length || 0})
+                    <Users className="w-3.5 h-3.5" />
+                    <span>2. LINK (Lesson Q&A Forum)</span>
                   </button>
+
+                  <button
+                    onClick={() => setActiveTab('lead')}
+                    className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+                      activeTab === 'lead'
+                        ? 'bg-amber-600 text-white shadow-md'
+                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <Rocket className="w-3.5 h-3.5" />
+                    <span>3. LEAD (Hands-on Capstone)</span>
+                  </button>
+
                   <button
                     onClick={() => setActiveTab('announcements')}
-                    className={`pb-3 -mb-3 transition-colors flex items-center gap-1 ${
+                    className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
                       activeTab === 'announcements'
-                        ? 'border-b-2 border-[#6C63FF] text-[#6C63FF]'
-                        : 'text-slate-500 hover:text-slate-800'
+                        ? 'bg-slate-800 text-white shadow-md'
+                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
-                    Announcements ({course.announcements?.length || 0})
+                    <Megaphone className="w-3.5 h-3.5" />
+                    <span>Announcements ({course.announcements?.length || 0})</span>
                   </button>
                 </div>
 
-                {/* Tab 1: Lesson Overview */}
-                {activeTab === 'lesson' && (
-                  <div className="space-y-4">
-                    <h2 className="text-xl font-extrabold text-[#14213D]">{currentLesson.title}</h2>
-                    {currentLesson.description && (
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        {currentLesson.description}
-                      </p>
-                    )}
-                    {currentLesson.article_body && (
-                      <div className="prose prose-sm max-w-none text-xs text-slate-700 bg-slate-50 p-6 rounded-2xl border border-slate-100 whitespace-pre-line leading-relaxed font-mono">
-                        {currentLesson.article_body}
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* TAB 1: LEARN (Lesson Overview, Article & Downloadables) */}
+                {activeTab === 'learn' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white mb-2">
+                        Lesson Overview
+                      </h3>
+                      {currentLesson.description && (
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                          {currentLesson.description}
+                        </p>
+                      )}
+                      {currentLesson.article_body && (
+                        <div className="mt-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 font-mono whitespace-pre-wrap leading-relaxed">
+                          {currentLesson.article_body}
+                        </div>
+                      )}
+                    </div>
 
-                {/* Tab 2: Downloadable Resources */}
-                {activeTab === 'resources' && (
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-bold text-[#14213D]">Downloadable Materials</h3>
-                    {currentLesson.resources && currentLesson.resources.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {currentLesson.resources.map((res) => (
-                          <div
-                            key={res.id}
-                            className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between"
-                          >
-                            <div className="flex items-center gap-3">
-                              <FileText className="w-5 h-5 text-[#6C63FF]" />
-                              <div>
-                                <h4 className="text-xs font-bold text-[#14213D]">{res.title}</h4>
-                                <span className="text-[10px] text-slate-400">
-                                  {res.file_type?.toUpperCase()} • {res.file_size || '1.5 MB'}
-                                </span>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => alert(`Downloading ${res.title}...`)}
-                              className="p-2 rounded-xl text-slate-600 hover:text-[#6C63FF] hover:bg-white transition-colors"
-                              title="Download Resource"
+                    {/* Downloadable Materials */}
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                        Downloadable Learning Materials ({currentLesson.resources?.length || 0})
+                      </h4>
+                      {currentLesson.resources && currentLesson.resources.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {currentLesson.resources.map((res) => (
+                            <div
+                              key={res.id}
+                              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between"
                             >
-                              <Download className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-slate-400">No downloadable files attached to this lesson.</p>
-                    )}
+                              <div className="flex items-center gap-3">
+                                <FileText className="w-5 h-5 text-indigo-600" />
+                                <div>
+                                  <h5 className="text-xs font-bold text-slate-900 dark:text-white">
+                                    {res.title}
+                                  </h5>
+                                  <span className="text-[10px] text-slate-400">
+                                    {res.file_type?.toUpperCase()} • {res.file_size || '1.2 MB'}
+                                  </span>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => alert(`Downloading verified resource: ${res.title}...`)}
+                                className="p-2 rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-400">No attachments for this unit.</p>
+                      )}
+                    </div>
                   </div>
                 )}
 
-                {/* Tab 3: Announcements */}
+                {/* TAB 2: LINK (Live Course Q&A Forum) */}
+                {activeTab === 'link' && (
+                  <div>
+                    <CourseDiscussions courseId={course.id} />
+                  </div>
+                )}
+
+                {/* TAB 3: LEAD (Hands-on Capstones & Practical Evaluations) */}
+                {activeTab === 'lead' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                          Hands-On Capstone Project for this Course
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          Demonstrate your engineering competence by engineering a complete application.
+                        </p>
+                      </div>
+                      <Link
+                        to="/student/projects"
+                        className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-md"
+                      >
+                        Open Capstone Studio
+                      </Link>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 space-y-3">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                        Course Capstone Assignment
+                      </span>
+                      <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                        Enterprise E-Commerce & Telebirr/Chapa Ledger Engine
+                      </h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Build a high-throughput commerce backend with double-entry cryptographic ledger auditing, Sanctum tokens, and reactive checkout flows.
+                      </p>
+                      <div className="pt-2 flex gap-3">
+                        <Link
+                          to="/student/projects"
+                          className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm"
+                        >
+                          Submit Project Code
+                        </Link>
+                        <Link
+                          to="/student/skills"
+                          className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold"
+                        >
+                          View Skills Matrix
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: Announcements */}
                 {activeTab === 'announcements' && (
                   <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-[#14213D]">Course Announcements</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      Course Announcements
+                    </h3>
                     {course.announcements && course.announcements.length > 0 ? (
                       course.announcements.map((ann) => (
-                        <div key={ann.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                        <div
+                          key={ann.id}
+                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60 space-y-1.5"
+                        >
                           <div className="flex items-center gap-2">
-                            <Megaphone className="w-4 h-4 text-[#6C63FF]" />
-                            <h4 className="text-xs font-bold text-[#14213D]">{ann.title}</h4>
+                            <Megaphone className="w-4 h-4 text-indigo-600" />
+                            <h4 className="text-xs font-bold text-slate-900 dark:text-white">{ann.title}</h4>
                           </div>
-                          <p className="text-xs text-slate-600 leading-relaxed">{ann.content}</p>
+                          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{ann.content}</p>
                           <span className="text-[10px] text-slate-400 block pt-1">
                             Posted {new Date(ann.created_at).toLocaleDateString()}
                           </span>

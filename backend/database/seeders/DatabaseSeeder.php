@@ -693,5 +693,8 @@ class DatabaseSeeder extends Seeder
         ActivityLog::log('COURSE_ENROLL', "Enrolled in course: {$course1->title}", $course1, $student1);
         ActivityLog::log('QUIZ_SUBMIT', "Completed quiz: {$quiz1->title} with score 100%", $quiz1, $student1);
         ActivityLog::log('CERTIFICATE_GENERATE', "Generated certificate {$certNumber}", $course2, $student1);
+
+        // 15. The 3 L's Learning Framework (LEARN, LINK, LEAD)
+        $this->call(ThreeLsFrameworkSeeder::class);
     }
 }
